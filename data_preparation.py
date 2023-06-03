@@ -213,14 +213,30 @@ def process_images():
             new_category ={'id': len(json_data['categories']), 'name': current_vehicle_type, 'supercategory': 'vehicle'}
             json_data['categories'].append(new_category)
 
+        # add new image record
+        current_image = cv2.imread(current_image_path)
+        height, width, _ = current_image.shape
+        current_image_id = len(json_data['images'])
+        new_image = {'id': current_image_id, 'file_name': current_line[0].split('/')[1], 'height': height, 'width': width}
+        json_data['images'].append(new_image)
 
+        # add new image's annotation record
+
+        for cate_idx, cate_item in enumerate(json_data['categories']):
+            if cate_item['name'] == current_line[4]:
+                current_category_id = cate_item['id']
+                break
+
+        new_annotation = {'id': 0, 'image_id': current_image_id, 'category_id': current_category_id,
+                          'bbox': [0, 0, width, height], 'area': width * height, 'iscrowd': 0}
+        json_data['annotations'].append(new_annotation)
 
 
         # if current_vehicle_model in ('MPV', 'SUV', 'Hatchback', 'seadan', 'Minibus', 'Pickup', 'Estate', 'Sport'):
-        s = 1
 
-        # current_image = cv2.imread(current_image_path)
-        # height, width, _ = current_image.shape
+        # with open('veriwild_annotations.json', 'w', encoding='utf-8') as f:
+        #     json.dump(json_data, f, ensure_ascii=False, indent=4)
+
 
     print(list_vehicle_types)
 
