@@ -1,8 +1,16 @@
-path:  "/media/hao/My Passport/dataset/blimp/Vehicle Classification.v1i.folder"
+# Note dataset download directory is
+# /media/hao/Seagate Basic/dataset/
+# You can update this in '/home/hao/.config/Ultralytics/settings.yaml'
+
+#/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug
+#/media/hao/Seagate Basic/dataset/veri-wild/vehicle_det_debug-1/valid
+
+#path:  "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug"
+path:  "veri-wild/veri-wild1_debug/vehicle_det_debug-1"
 train: "train"
-val: "val"
-#test: "test"
+val: "valid"
+test: "test"
 
 #classes names
 #replace all class names list with your classes names
-names: ['seadan', 'SUV']
+names: ['SUV', 'business purpose vehicle/MPV', 'sedan', 'minivan', 'pickup truck', 'HGV/large truck', 'light passenger vehicle', 'large-sized bus', 'small-sized truck', 'bulk lorry/fence truck']

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="10.79.23.76" id="dc23459c-6167-4221-999b-de86721c1310" port="22" customName="elysium" nameFormat="CUSTOM" username="quan" useOpenSSHConfig="true">
+        <option name="customName" value="elysium" />
+      </sshConfig>
+      <sshConfig authType="PASSWORD" host="10.79.23.75" id="beae41f2-59a2-4c5c-a51d-1384d73e78a6" port="22" customName="magrathea" nameFormat="CUSTOM" username="quan" useOpenSSHConfig="true">
+        <option name="customName" value="magrathea" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>

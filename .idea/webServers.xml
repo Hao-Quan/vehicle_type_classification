@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7b79af59-cbb2-4e54-8728-943cebdde29f" name="elysium">
+        <fileTransfer rootFolder="/home/quan" accessType="SFTP" host="10.79.23.76" port="22" sshConfigId="dc23459c-6167-4221-999b-de86721c1310" sshConfig="elysium">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

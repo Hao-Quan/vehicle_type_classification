@@ -2,120 +2,120 @@ import os
 import json
 import cv2
 
-def preprare_header():
-    json_data = {
-        "categories": [
-            {
-                "id": 0,
-                "name": "vehicle",
-                "supercategory": "none"
-            },
-            {
-                "id": 1,
-                "name": "MPV",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 2,
-                "name": "SUV",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 3,
-                "name": "Sedan/fastback",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 4,
-                "name": "Minibus",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 5,
-                "name": "Pickup",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 6,
-                "name": "Estate",
-                "supercategory": "vechicle"
-            },
-            {
-                "id": 7,
-                "name": "Sport",
-                "supercategory": "vechicle"
-            }
-        ],
-        "images": [
-            {
-                "id": 0,
-                "file_name": "000007.jpg",
-                "height": 305,
-                "width": 247
-            },
-            {
-                "id": 1,
-                "file_name": "000001.jpg",
-                "height": 557,
-                "width": 756
-            },
-            {
-                "id": 2,
-                "file_name": "000012.jpg",
-                "height": 295,
-                "width": 327
-            }
-
-        ],
-        "annotations": [
-            {
-                "id": 0,
-                "image_id": 0,
-                "category_id": 1,
-                "bbox": [
-                    0,
-                    0,
-                    247,
-                    305
-                ],
-                "area": 75335,
-                "iscrowd": 0
-            },
-            {
-                "id": 0,
-                "image_id": 1,
-                "category_id": 2,
-                "bbox": [
-                    0,
-                    0,
-                    756,
-                    557
-
-                ],
-                "area": 421092,
-                "iscrowd": 0
-            },
-            {
-                "id": 0,
-                "image_id": 2,
-                "category_id": 3,
-                "bbox": [
-                    0,
-                    0,
-                    327,
-                    295
-
-                ],
-                "area": 96465,
-                "iscrowd": 0
-            }
-        ]
-    }
-
-    json_string = json.dumps(json_data)
-    print(json_string)
-    with open('data.json', 'w') as f:
-        json.dump(json_data, f)
+# def preprare_header():
+#     json_data = {
+#         "categories": [
+#             {
+#                 "id": 0,
+#                 "name": "vehicle",
+#                 "supercategory": "none"
+#             },
+#             {
+#                 "id": 1,
+#                 "name": "MPV",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 2,
+#                 "name": "SUV",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 3,
+#                 "name": "Sedan/fastback",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 4,
+#                 "name": "Minibus",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 5,
+#                 "name": "Pickup",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 6,
+#                 "name": "Estate",
+#                 "supercategory": "vechicle"
+#             },
+#             {
+#                 "id": 7,
+#                 "name": "Sport",
+#                 "supercategory": "vechicle"
+#             }
+#         ],
+#         "images": [
+#             {
+#                 "id": 0,
+#                 "file_name": "000007.jpg",
+#                 "height": 305,
+#                 "width": 247
+#             },
+#             {
+#                 "id": 1,
+#                 "file_name": "000001.jpg",
+#                 "height": 557,
+#                 "width": 756
+#             },
+#             {
+#                 "id": 2,
+#                 "file_name": "000012.jpg",
+#                 "height": 295,
+#                 "width": 327
+#             }
+#
+#         ],
+#         "annotations": [
+#             {
+#                 "id": 0,
+#                 "image_id": 0,
+#                 "category_id": 1,
+#                 "bbox": [
+#                     0,
+#                     0,
+#                     247,
+#                     305
+#                 ],
+#                 "area": 75335,
+#                 "iscrowd": 0
+#             },
+#             {
+#                 "id": 0,
+#                 "image_id": 1,
+#                 "category_id": 2,
+#                 "bbox": [
+#                     0,
+#                     0,
+#                     756,
+#                     557
+#
+#                 ],
+#                 "area": 421092,
+#                 "iscrowd": 0
+#             },
+#             {
+#                 "id": 0,
+#                 "image_id": 2,
+#                 "category_id": 3,
+#                 "bbox": [
+#                     0,
+#                     0,
+#                     327,
+#                     295
+#
+#                 ],
+#                 "area": 96465,
+#                 "iscrowd": 0
+#             }
+#         ]
+#     }
+#
+#     json_string = json.dumps(json_data)
+#     print(json_string)
+#     with open('data.json', 'w') as f:
+#         json.dump(json_data, f)
 
 def display_veriwild_vehicle_types():
     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
@@ -137,6 +137,7 @@ def display_veriwild_vehicle_types():
 
     print(list_vehicle_types)
 
+    # classes defined in Veri-wild
     # ['SUV', 'business purpose vehicle/MPV', 'sedan', 'minivan', 'pickup truck', 'HGV/large truck', 'light passenger vehicle', 'large-sized bus', 'small-sized truck', 'bulk lorry/fence truck',
 
 def process_images():
@@ -147,42 +148,6 @@ def process_images():
                 "name": "vehicle",
                 "supercategory": "none"
             }
-            # ,
-            # {
-            #     "id": 1,
-            #     "name": "MPV",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 2,
-            #     "name": "SUV",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 3,
-            #     "name": "Sedan/Fastback",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 4,
-            #     "name": "Minibus",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 5,
-            #     "name": "Pickup",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 6,
-            #     "name": "Estate",
-            #     "supercategory": "vechicle"
-            # },
-            # {
-            #     "id": 7,
-            #     "name": "Sport",
-            #     "supercategory": "vechicle"
-            # }
         ],
         "images": [
         ],
@@ -243,5 +208,4 @@ def process_images():
 
 
 if __name__ == "__main__":
-    # preprare_header()
     process_images()
