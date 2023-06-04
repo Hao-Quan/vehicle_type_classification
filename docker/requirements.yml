@@ -1,0 +1,12 @@
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+  - pip
+#dependencies:
+#  - pudb
+#  - pytables
+#  - einops
+#  - mpi4py=3.0 # installs cuda-aware openmpi
+#  - PyYAML=6.0
+
