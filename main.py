@@ -51,8 +51,8 @@ def train():
     model = YOLO("models/yolov8n.pt")
 
     results = model.train(
-       # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/vehicle_det_debug-1/train.yaml',
-        data='/data/veri-wild/veri-wild1_debug/vehicle_det_debug-1/train.yaml',
+       # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/vehicle_det_debug-1/data.yaml',
+       data='/data/veri-wild/veri-wild1_debug/vehicle_det_debug-1/data.yaml',
        # data=dataset,
        imgsz=640,
        epochs=10,

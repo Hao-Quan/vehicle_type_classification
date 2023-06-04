@@ -10,6 +10,8 @@ COPY requirements.yml /requirements.yml
 #RUN pip install -e torchlight
 
 RUN  pip install ultralytics
+RUN  pip install roboflow
+RUN  pip install numpy --upgrade
 
 # If you are using a py27 image, change this to py27
 RUN /bin/bash -c ". activate py38 && conda env update -f=/requirements.yml"
