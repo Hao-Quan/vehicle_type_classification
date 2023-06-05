@@ -1,121 +1,7 @@
 import os
 import json
 import cv2
-
-# def preprare_header():
-#     json_data = {
-#         "categories": [
-#             {
-#                 "id": 0,
-#                 "name": "vehicle",
-#                 "supercategory": "none"
-#             },
-#             {
-#                 "id": 1,
-#                 "name": "MPV",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 2,
-#                 "name": "SUV",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 3,
-#                 "name": "Sedan/fastback",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 4,
-#                 "name": "Minibus",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 5,
-#                 "name": "Pickup",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 6,
-#                 "name": "Estate",
-#                 "supercategory": "vechicle"
-#             },
-#             {
-#                 "id": 7,
-#                 "name": "Sport",
-#                 "supercategory": "vechicle"
-#             }
-#         ],
-#         "images": [
-#             {
-#                 "id": 0,
-#                 "file_name": "000007.jpg",
-#                 "height": 305,
-#                 "width": 247
-#             },
-#             {
-#                 "id": 1,
-#                 "file_name": "000001.jpg",
-#                 "height": 557,
-#                 "width": 756
-#             },
-#             {
-#                 "id": 2,
-#                 "file_name": "000012.jpg",
-#                 "height": 295,
-#                 "width": 327
-#             }
-#
-#         ],
-#         "annotations": [
-#             {
-#                 "id": 0,
-#                 "image_id": 0,
-#                 "category_id": 1,
-#                 "bbox": [
-#                     0,
-#                     0,
-#                     247,
-#                     305
-#                 ],
-#                 "area": 75335,
-#                 "iscrowd": 0
-#             },
-#             {
-#                 "id": 0,
-#                 "image_id": 1,
-#                 "category_id": 2,
-#                 "bbox": [
-#                     0,
-#                     0,
-#                     756,
-#                     557
-#
-#                 ],
-#                 "area": 421092,
-#                 "iscrowd": 0
-#             },
-#             {
-#                 "id": 0,
-#                 "image_id": 2,
-#                 "category_id": 3,
-#                 "bbox": [
-#                     0,
-#                     0,
-#                     327,
-#                     295
-#
-#                 ],
-#                 "area": 96465,
-#                 "iscrowd": 0
-#             }
-#         ]
-#     }
-#
-#     json_string = json.dumps(json_data)
-#     print(json_string)
-#     with open('data.json', 'w') as f:
-#         json.dump(json_data, f)
+from tqdm import tqdm
 
 def display_veriwild_vehicle_types():
     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
@@ -154,8 +40,13 @@ def process_images():
         "annotations": [
         ]
     }
-    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
-    root_images_folder = os.path.join(root_folder, 'images')
+    #local
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
+    # root_images_folder = os.path.join(root_folder, 'images')
+    #remote
+    root_folder = '/data/veri-wild/veri-wild1/'
+    root_images_folder = os.path.join(root_folder, 'images_part01')
+
     vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
 
     with open(vehicle_info_file_path) as file:
@@ -163,7 +54,7 @@ def process_images():
 
     list_vehicle_types = []
 
-    for line in lines:
+    for line in tqdm(lines):
         current_line = line.split(';')
         current_image_path = os.path.join(root_images_folder, current_line[0] + '.jpg')
         current_vehicle_type = current_line[4]
@@ -199,13 +90,13 @@ def process_images():
 
         # if current_vehicle_model in ('MPV', 'SUV', 'Hatchback', 'seadan', 'Minibus', 'Pickup', 'Estate', 'Sport'):
 
-        # with open('veriwild_annotations.json', 'w', encoding='utf-8') as f:
-        #     json.dump(json_data, f, ensure_ascii=False, indent=4)
-
+    exported_json_annotation_path = 'exported_annot_json'
+    if not os.path.exists(exported_json_annotation_path):
+        os.makedirs(exported_json_annotation_path)
+    with open(os.path.join(exported_json_annotation_path, 'veriwild1_annotations.json'), 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=4)
 
     print(list_vehicle_types)
-
-
 
 if __name__ == "__main__":
     process_images()
