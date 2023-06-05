@@ -2,6 +2,7 @@ import os
 import json
 import cv2
 from tqdm import tqdm
+from roboflow import Roboflow
 
 def display_veriwild_vehicle_types():
     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
@@ -98,5 +99,108 @@ def process_images():
 
     print(list_vehicle_types)
 
+# def upload_images_1():
+#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+#     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
+#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
+#     # Construct the URL
+#     # upload_url = "".join([
+#     #     "https://api.roboflow.com/dataset/vehicle_det_debug/upload",
+#     #     "?api_key=ivO9dgiYc3AQpHvRWBHC"
+#     # ])
+#     upload_url = "".join([
+#         "https://api.roboflow.com/dataset/vehicle_det_class_api_debug/upload",
+#         "?api_key=ivO9dgiYc3AQpHvRWBHC"
+#     ])
+#
+#     # Convert to JPEG Buffer
+#     buffered = io.BytesIO()
+#
+#     for subdir, dirs, files in tqdm(os.walk(root_folder)):
+#         for file in files:
+#             if file.split('.')[-1] == 'jpg':
+#                 print(os.path.join(subdir, file))
+#                 # image = Image.open("datasets/1.jpg").convert("RGB")
+#                 image = Image.open(os.path.join(subdir,file)).convert("RGB")
+#                 image.save(buffered, quality=90, format="JPEG")
+#                 m = MultipartEncoder(fields={'file': (file + ".jpg", buffered.getvalue(), "image/jpeg")})
+#                 r = requests.post(upload_url, data=m, headers={'Content-Type': m.content_type})
+#                 print(r.json())
+
+# def upload_images_example():
+#     # creating the Roboflow object
+#     # obtaining your API key: https://docs.roboflow.com/rest-api#obtaining-your-api-key
+#     rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
+#
+#     # using the workspace method on the Roboflow object
+#     workspace = rf.workspace()
+#
+#     # identifying the project for upload
+#     project = workspace.project("vehicle_det_class_api_debug")
+#
+#     # uploading the image to your project
+#     project.upload("datasets/1.jpg")
+
+# def upload_images_2():
+#     # creating the Roboflow object
+#     # obtaining your API key: https://docs.roboflow.com/rest-api#obtaining-your-api-key
+#     rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
+#
+#     # using the workspace method on the Roboflow object
+#     workspace = rf.workspace()
+#
+#     # identifying the project for upload
+#     project = workspace.project("vehicle_debug")
+#
+#     # uploading the image to your project
+#     # project.upload("datasets/1.jpg")
+#
+#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+#     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
+#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
+#
+#
+#     annotation_filename = os.path.join(root_folder, 'veriwild_annotations.json')
+#     annotation_str = open(annotation_filename, "r").read()
+#
+#     for subdir, dirs, files in tqdm(os.walk(root_folder)):
+#         for file in files:
+#             if file.split('.')[-1] == 'jpg':
+#                 print(os.path.join(subdir, file))
+#                 project.upload(os.path.join(subdir,file), annotation_filename)
+#
+
+def upload_images_from_server():
+    # rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
+    # project = rf.workspace("politecnico-di-milano-iuz9a").project("vehicle_classification-xmkdq")
+    # dataset = project.version(1).download("yolov8")
+
+    # creating the Roboflow object
+    # obtaining your API key: https://docs.roboflow.com/rest-api#obtaining-your-api-key
+    rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
+
+    # using the workspace method on the Roboflow object
+    workspace = rf.workspace()
+
+    # identifying the project for upload
+    project = workspace.project("vehicle_classification-xmkdq")
+
+    # uploading the image to your project
+    # project.upload("datasets/1.jpg")
+
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
+    root_folder = '/data/veri-wild/veri-wild1/images_part01'
+    annotation_filename = '/data/veri-wild/veri-wild1/veriwild1_annotations.json'
+    # annotation_str = open(annotation_filename, "r").read()
+
+    for subdir, dirs, files in tqdm(os.walk(root_folder)):
+        for file in files:
+            if file.split('.')[-1] == 'jpg':
+                print(os.path.join(subdir, file))
+                project.upload(os.path.join(subdir, file), annotation_filename)
+
+
 if __name__ == "__main__":
-    process_images()
+    # process_images()
+    upload_images_from_server()
