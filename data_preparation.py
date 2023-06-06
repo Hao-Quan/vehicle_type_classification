@@ -101,11 +101,14 @@ def process_images():
 
 def process_images_JSON_separated():
     # local
-    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
-    root_images_folder = os.path.join(root_folder, 'images_part01_debug')
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    # root_images_folder = os.path.join(root_folder, 'images_part01_debug')
+    # exported_json_annotation_path = os.path.join(root_images_folder, 'exported_annot_json')
+
     # remote
-    # root_folder = '/data/veri-wild/veri-wild1/'
-    # root_images_folder = os.path.join(root_folder, 'images_part01')
+    root_folder = '/data/veri-wild/veri-wild1/'
+    root_images_folder = os.path.join(root_folder, 'images_part01')
+    exported_json_annotation_path = os.path.join(root_images_folder, 'exported_annot_json')
 
     vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
 
@@ -195,19 +198,13 @@ def process_images_JSON_separated():
         }
 
         current_line = line.split(';')
+        current_line[4] = current_line[4].strip()
         current_image_path = os.path.join(root_images_folder, current_line[0] + '.jpg')
         current_vehicle_type = current_line[4]
 
         # for some case of first space ' small-sized truck', remove the additional space
         # if current_vehicle_type[0] == ' ':
         #     current_vehicle_type = current_vehicle_type[1:]
-
-        # find new vehicle type and add it to JSON categories
-        # if not current_vehicle_type in list_vehicle_types:
-        #     list_vehicle_types.append(current_vehicle_type)
-        #     new_category = {'id': len(json_data['categories']), 'name': current_vehicle_type,
-        #                     'supercategory': 'vehicle'}
-        #     json_data['categories'].append(new_category)
 
         if os.path.isfile(current_image_path) == False:
             continue
@@ -232,15 +229,11 @@ def process_images_JSON_separated():
                           'bbox': [0, 0, width, height], 'area': width * height, 'iscrowd': 0}
         json_data['annotations'].append(new_annotation)
 
-        # if current_vehicle_model in ('MPV', 'SUV', 'Hatchback', 'seadan', 'Minibus', 'Pickup', 'Estate', 'Sport'):
-
-        exported_json_annotation_path = 'exported_annot_json'
         if not os.path.exists(exported_json_annotation_path):
             os.makedirs(exported_json_annotation_path)
         with open(os.path.join(exported_json_annotation_path, current_line[0].split('/')[1] + '.json'), 'w', encoding='utf-8') as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
 
-    # print(list_vehicle_types)
 
 # def upload_images_1():
 #     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
@@ -345,8 +338,45 @@ def upload_images_from_server():
                 print(os.path.join(subdir, file))
                 project.upload(os.path.join(subdir, file), annotation_filename)
 
+def upload_images_from_server_JSON_separated():
+
+    # creating the Roboflow object
+    rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
+
+    # using the workspace method on the Roboflow object
+    workspace = rf.workspace()
+
+    # identifying the project for upload
+    project = workspace.project("vechicle-det-cla")
+
+
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
+
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+
+    # root_folder = '/data/veri-wild/veri-wild1/images_part01'
+    # annotation_folder = '/data/veri-wild/veri-wild1/images_part01/exported_annot_json'
+
+    # root_folder = '/data/veri-wild/veri-wild1/'
+
+    #local
+    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+
+    # remote
+    # root_folder = '/data/veri-wild/veri-wild1/images_part01'
+
+    root_images_folder = os.path.join(root_folder, '')
+    exported_json_annotation_path = os.path.join(root_images_folder, 'exported_annot_json')
+
+    for subdir, dirs, files in tqdm(os.walk(root_images_folder)):
+        for file in files:
+            if file.split('.')[-1] == 'jpg':
+                print(os.path.join(subdir, file))
+                annotation_file_name = file.split('.')[0] + '.json'
+                project.upload(os.path.join(subdir, file), os.path.join(exported_json_annotation_path, annotation_file_name))
 
 if __name__ == "__main__":
     # process_images()
-    process_images_JSON_separated()
+    # process_images_JSON_separated()
     # upload_images_from_server()
+    upload_images_from_server_JSON_separated()
