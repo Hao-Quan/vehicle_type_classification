@@ -347,7 +347,7 @@ def upload_images_from_server_JSON_separated():
     workspace = rf.workspace()
 
     # identifying the project for upload
-    project = workspace.project("vechicle-det-cla")
+    project = workspace.project("vehicle_det_cl_server")
 
 
     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
@@ -360,20 +360,23 @@ def upload_images_from_server_JSON_separated():
     # root_folder = '/data/veri-wild/veri-wild1/'
 
     #local
-    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
 
     # remote
-    # root_folder = '/data/veri-wild/veri-wild1/images_part01'
+    root_folder = '/data/veri-wild/veri-wild1/images_part01'
 
     root_images_folder = os.path.join(root_folder, '')
     exported_json_annotation_path = os.path.join(root_images_folder, 'exported_annot_json')
 
-    for subdir, dirs, files in tqdm(os.walk(root_images_folder)):
+    for subdir, dirs, files in os.walk(root_images_folder):
         for file in files:
             if file.split('.')[-1] == 'jpg':
                 print(os.path.join(subdir, file))
                 annotation_file_name = file.split('.')[0] + '.json'
-                project.upload(os.path.join(subdir, file), os.path.join(exported_json_annotation_path, annotation_file_name))
+                try:
+                    project.upload(os.path.join(subdir, file), os.path.join(exported_json_annotation_path, annotation_file_name))
+                except Exception:
+                    pass
 
 if __name__ == "__main__":
     # process_images()
