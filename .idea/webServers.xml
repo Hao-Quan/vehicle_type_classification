@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="d0c23fa0-ef32-4add-8093-210b777321f2" name="magrathea">
+        <fileTransfer rootFolder="/home/quan" accessType="SFTP" host="10.79.23.75" port="22" sshConfigId="beae41f2-59a2-4c5c-a51d-1384d73e78a6" sshConfig="magrathea">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

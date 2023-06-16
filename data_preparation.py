@@ -294,18 +294,18 @@ def resize_datasets():
     #     "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_resized_dataset/train/000003.jpg")
 
     # local
-    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
 
     # remote
-    root_folder = '/data/veri-wild/veri-wild1'
+    # root_folder = '/data/veri-wild/veri-wild1'
 
     # source images
     root_yolov8_dataset_folder = os.path.join(root_folder, "yolov8_dataset")
     # target resized images
-    root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset")
-    target_train_set_folder = os.path.join(root_images_resized_folder, "train")
-    target_valid_set_folder = os.path.join(root_images_resized_folder, "valid")
-    target_test_set_folder = os.path.join(root_images_resized_folder, "test")
+    root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset_debug")
+    target_train_set_folder = os.path.join(root_images_resized_folder, "train/images")
+    target_valid_set_folder = os.path.join(root_images_resized_folder, "valid/images")
+    target_test_set_folder = os.path.join(root_images_resized_folder, "test/images")
 
     if os.path.exists(root_images_resized_folder) == False:
         os.makedirs(root_images_resized_folder)
@@ -322,7 +322,6 @@ def resize_datasets():
             print(source_filepath)
             if source_filepath.endswith(".jpg"):
                 metric = subdir.split("/")[-1]
-
                 if metric == "train":
                         target_filepath = target_train_set_folder
                 elif metric == "valid":
@@ -330,6 +329,7 @@ def resize_datasets():
                 elif metric == "test":
                         target_filepath = target_test_set_folder
 
+                # only python > 3.10
                 # match metric:
                 #     case "train":
                 #         target_filepath = target_train_set_folder
@@ -344,6 +344,92 @@ def resize_datasets():
 
                 print(target_filepath)
 
+def generate_yolov8_annotation():
+    # local
+    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset_debug")
+
+    # remote
+    # root_folder = '/data/veri-wild/veri-wild1/'
+    # root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset")
+
+
+    target_train_label_folder = os.path.join(root_images_resized_folder, "train/labels")
+    target_valid_label_folder = os.path.join(root_images_resized_folder, "valid/labels")
+    target_test_label_folder = os.path.join(root_images_resized_folder, "test/labels")
+
+    if os.path.exists(target_train_label_folder) == False:
+        os.makedirs(target_train_label_folder)
+    if os.path.exists(target_valid_label_folder) == False:
+        os.makedirs(target_valid_label_folder)
+    if os.path.exists(target_test_label_folder) == False:
+        os.makedirs(target_test_label_folder)
+
+    vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
+
+    with open(vehicle_info_file_path) as file:
+        lines = [line.rstrip() for line in file]
+
+    metrics = ["train", "valid", "test"]
+
+    for metric in metrics:
+        metric_images_folder_path = os.path.join(root_images_resized_folder, metric, "images")
+        for subdir, dirs, files in os.walk(metric_images_folder_path):
+            for file in files:
+                image_filename = int(file.split(".")[0])
+                line = lines[image_filename - 1]
+                # e.g., 00001/000004;14;2018-03-11 10:30:58;Changan;SUV;white
+                current_line = line.split(';')
+                # [4] type vehicle class
+                current_line[4] = current_line[4].strip()
+                # current_image_path = os.path.join(root_images_folder, current_line[0] + '.jpg')
+                current_vehicle_type = current_line[4]
+
+                # for some case of first space ' small-sized truck', remove the additional space
+                if current_vehicle_type[0] == ' ':
+                    current_vehicle_type = current_vehicle_type[1:]
+
+                if current_vehicle_type == "SUV":
+                    label_current_vehicle_type = 0
+                elif current_vehicle_type == "business purpose vehicle/MPV":
+                    label_current_vehicle_type = 1
+                elif current_vehicle_type == "sedan":
+                    label_current_vehicle_type = 2
+                elif current_vehicle_type == "minivan":
+                    label_current_vehicle_type = 3
+                elif current_vehicle_type == "pickup truck":
+                    label_current_vehicle_type = 4
+                elif current_vehicle_type == "HGV/large truck":
+                    label_current_vehicle_type = 5
+                elif current_vehicle_type == "light passenger vehicle":
+                    label_current_vehicle_type = 6
+                elif current_vehicle_type == "large-sized bus":
+                    label_current_vehicle_type = 7
+                elif current_vehicle_type == "small-sized truck":
+                    label_current_vehicle_type = 8
+                elif current_vehicle_type == "bulk lorry/fence truck":
+                    label_current_vehicle_type = 9
+                elif current_vehicle_type == "minibus":
+                    label_current_vehicle_type = 10
+                elif current_vehicle_type == "others":
+                    label_current_vehicle_type = 11
+                elif current_vehicle_type == "tank car/tanker":
+                    label_current_vehicle_type = 12
+
+                annotation_string = str(label_current_vehicle_type) + " 0.5 0.5 1 1"
+                if metric == "train":
+                    current_annotation_path = os.path.join(target_train_label_folder, file.split(".")[0] + ".txt")
+                elif metric == "valid":
+                    current_annotation_path = os.path.join(target_valid_label_folder, file.split(".")[0] + ".txt")
+                elif metric == "test":
+                    current_annotation_path = os.path.join(target_test_label_folder, file.split(".")[0] + ".txt")
+
+                text_file = open(current_annotation_path, "w")
+                text_file.write(annotation_string)
+                text_file.close()
+
+                # source_filepath = os.path.join(subdir, file)
+                # print(source_filepath)
 
 # def upload_images_1():
 #     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
@@ -494,4 +580,5 @@ if __name__ == "__main__":
     # upload_images_from_server()
     # upload_images_from_server_JSON_separated()
     # split_train_val_test_dataset()
-    resize_datasets()
+    # resize_datasets()
+    generate_yolov8_annotation()

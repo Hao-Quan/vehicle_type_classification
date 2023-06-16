@@ -24,14 +24,14 @@ def train():
 
     results = model.train(
        # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/vehicle_det_debug-1/data.yaml',
-       data='/data/veri-wild/veri-wild1_debug/vehicle_det_debug-1/data.yaml',
+       # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_resized_dataset_debug/data.yaml',
+       # data='/data/veri-wild/veri-wild1_debug/vehicle_det_debug-1/data.yaml',
+        data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
        # data=dataset,
        imgsz=640,
-       epochs=70,
-       batch=8,
+       epochs=100,
+       #batch=8,
        name='yolov8n_vehicle')
-
-    a = 1
 
 def val():
     #local
