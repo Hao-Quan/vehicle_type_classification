@@ -1,5 +1,7 @@
 import os
 import json
+import shutil
+
 import cv2
 from tqdm import tqdm
 from roboflow import Roboflow
@@ -98,6 +100,8 @@ def process_images():
         json.dump(json_data, f, ensure_ascii=False, indent=4)
 
     print(list_vehicle_types)
+
+# def generate_yolov8_label():
 
 def process_images_JSON_separated():
     # local
@@ -233,6 +237,112 @@ def process_images_JSON_separated():
             os.makedirs(exported_json_annotation_path)
         with open(os.path.join(exported_json_annotation_path, current_line[0].split('/')[1] + '.json'), 'w', encoding='utf-8') as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
+
+def split_train_val_test_dataset():
+    # local
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    # root_images_folder = os.path.join(root_folder, 'images_part01_debug')
+    # root_yolov8_dataset_folder = os.path.join(root_folder, "yolov8_dataset")
+    # train_set_folder = os.path.join(root_yolov8_dataset_folder, "train")
+    # valid_set_folder = os.path.join(root_yolov8_dataset_folder, "valid")
+    # test_set_folder = os.path.join(root_yolov8_dataset_folder, "test")
+    # train_num = 7
+    # valid_num = train_num + 2
+
+
+    # remote
+    root_folder = '/data/veri-wild/veri-wild1'
+    root_images_folder = os.path.join(root_folder, 'images_part01')
+    root_yolov8_dataset_folder = os.path.join(root_folder, "yolov8_dataset")
+    train_set_folder = os.path.join(root_yolov8_dataset_folder, "train")
+    valid_set_folder = os.path.join(root_yolov8_dataset_folder, "valid")
+    test_set_folder = os.path.join(root_yolov8_dataset_folder, "test")
+    train_num = 28470
+    valid_num = train_num + 8143
+
+    if os.path.exists(root_yolov8_dataset_folder) == False:
+        os.makedirs(root_yolov8_dataset_folder)
+    if os.path.exists(train_set_folder) == False:
+        os.makedirs(train_set_folder)
+    if os.path.exists(valid_set_folder) == False:
+        os.makedirs(valid_set_folder)
+    if os.path.exists(test_set_folder) == False:
+        os.makedirs(test_set_folder)
+
+    for subdir, dirs, files in os.walk(root_images_folder):
+        for file in files:
+            # print(os.path.join(subdir, file))
+            source_filepath = os.path.join(subdir, file)
+
+            if source_filepath.endswith(".jpg"):
+                num_foler = int(subdir.split("/")[-1])
+                if num_foler < train_num:
+                    # shutil.copy(source_filepath, os.path.join(train_set_folder, file))
+                    shutil.copy(source_filepath, train_set_folder)
+                elif num_foler >= train_num and num_foler < valid_num:
+                    shutil.copy(source_filepath, valid_set_folder)
+                else:
+                    shutil.copy(source_filepath, test_set_folder)
+
+                print(source_filepath)
+
+def resize_datasets():
+    # prova
+    # test_img = cv2.imread(
+    #     "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/vehicle_det_debug-1_STRUCTURE_ROBOFLOW_EXAMPLE/train/images/000003_jpg.rf.5bdd491ed947e19faf71a2b94bb8c575.jpg")
+    # orig_img = cv2.imread(
+    #     "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_resized_dataset/train/000003.jpg")
+
+    # local
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+
+    # remote
+    root_folder = '/data/veri-wild/veri-wild1'
+
+    # source images
+    root_yolov8_dataset_folder = os.path.join(root_folder, "yolov8_dataset")
+    # target resized images
+    root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset")
+    target_train_set_folder = os.path.join(root_images_resized_folder, "train")
+    target_valid_set_folder = os.path.join(root_images_resized_folder, "valid")
+    target_test_set_folder = os.path.join(root_images_resized_folder, "test")
+
+    if os.path.exists(root_images_resized_folder) == False:
+        os.makedirs(root_images_resized_folder)
+    if os.path.exists(target_train_set_folder) == False:
+        os.makedirs(target_train_set_folder)
+    if os.path.exists(target_valid_set_folder) == False:
+        os.makedirs(target_valid_set_folder)
+    if os.path.exists(target_test_set_folder) == False:
+        os.makedirs(target_test_set_folder)
+
+    for subdir, dirs, files in os.walk(root_yolov8_dataset_folder):
+        for file in files:
+            source_filepath = os.path.join(subdir, file)
+            print(source_filepath)
+            if source_filepath.endswith(".jpg"):
+                metric = subdir.split("/")[-1]
+
+                if metric == "train":
+                        target_filepath = target_train_set_folder
+                elif metric == "valid":
+                        target_filepath = target_valid_set_folder
+                elif metric == "test":
+                        target_filepath = target_test_set_folder
+
+                # match metric:
+                #     case "train":
+                #         target_filepath = target_train_set_folder
+                #     case "valid":
+                #         target_filepath = target_valid_set_folder
+                #     case "test":
+                #         target_filepath = target_test_set_folder
+
+                img = cv2.imread(source_filepath)
+                img = cv2.resize(img, (640, 640))
+                cv2.imwrite(os.path.join(target_filepath, file), img)
+
+                print(target_filepath)
 
 
 # def upload_images_1():
@@ -382,4 +492,6 @@ if __name__ == "__main__":
     # process_images()
     # process_images_JSON_separated()
     # upload_images_from_server()
-    upload_images_from_server_JSON_separated()
+    # upload_images_from_server_JSON_separated()
+    # split_train_val_test_dataset()
+    resize_datasets()
