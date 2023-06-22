@@ -37,7 +37,7 @@ def val():
     #local
     # model = YOLO('runs/detect/yolov8n_vehicle14/weights/best.pt')  # load a custom model
     # remote debug
-    model = YOLO('runs/detect/yolov8n_vehicle6/weights/best.pt')  # load a custom model
+    model = YOLO('runs/detect/yolov8n_vehicle/weights/best.pt')  # load a custom model
 
     # Validate the model
     metrics = model.val()  # no arguments needed, dataset and settings remembered
@@ -61,10 +61,18 @@ def predict():
     # results = model.predict(show=True, save=True, save_txt=True, source="datasets/0616.jpg")
     # results = model.predict(show=True, save=True, save_txt=True, source="datasets/1.jpg")
     # remote
-    model = YOLO('runs/detect/yolov8n_vehicle6/weights/best.pt')  # load a custom model
-    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/0616.jpg")
-    results = model.predict(show=False, save=True, save_txt=True, source="datasets/1.jpg")
+    model = YOLO('runs/detect/yolov8n_vehicle/weights/best.pt')  # load a custom model
+    # results = model.predict(show=True, save=True, save_txt=True, source="datasets/0616.jpg")
 
+
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/1.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/2.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/3.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/4.png")
+
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/1.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/2.png")
+    results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/3.png")
 
 
     # results = model(im)
@@ -76,8 +84,15 @@ def predict():
 
     a = 1
 
+def convert():
+    model = YOLO('runs/detect/yolov8n_vehicle/weights/best.pt')
+    # model.export(format='onnx')
+    model.export(format='TensorRT', device=0)
+    a = 1
+
 
 if __name__ == "__main__":
-    train()
+    # train()
     # val()
     # predict()
+    convert()
