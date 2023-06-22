@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import numpy as np
 
 import cv2
 from tqdm import tqdm
@@ -574,6 +575,49 @@ def upload_images_from_server_JSON_separated():
                 except Exception:
                     pass
 
+def generate_pytorch_label_format():
+
+    root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1"
+    annotations_json_path = os.path.join(root_path, "veriwild1_annotations.json")
+
+    torchvision_path = os.path.join(root_path, "torchvision_dataset")
+    torchvision_label_path = os.path.join(torchvision_path, "label")
+    torchvision_data_path = os.path.join(torchvision_path, "data")
+    torchvision_train_path = os.path.join(torchvision_data_path, "train")
+    torchvision_valid_path = os.path.join(torchvision_data_path, "valid")
+    torchvision_test_path = os.path.join(torchvision_data_path, "test")
+
+    for foler_name in [torchvision_path, torchvision_label_path, torchvision_data_path, torchvision_train_path, torchvision_valid_path, torchvision_test_path]:
+        if os.path.exists(foler_name) == False:
+            os.makedirs(foler_name)
+
+    with open(annotations_json_path, 'r') as annotations_json:
+        j_data = json.load(annotations_json)
+
+    list_training_label = []
+    list_valid_label = []
+    list_test_label = []
+    for idx, item in enumerate(j_data["annotations"]):
+        if idx <=  train_num:
+            list_training_label.append(item["category_id"])
+        elif idx >  train_num and idx <= valid_num:
+            list_valid_label.append(item["category_id"])
+        else:
+            list_test_label.append(item["category_id"])
+
+    training_label = np.asarray(list_training_label, dtype=np.float32)
+    valid_label = np.asarray(list_valid_label, dtype=np.float32)
+    test_label = np.asarray(list_test_label, dtype=np.float32)
+
+    with open(os.path.join(torchvision_label_path, 'training_label.npy'), 'wb') as f:
+        np.save(f, training_label)
+    with open(os.path.join(torchvision_label_path, 'valid_label.npy'), 'wb') as f:
+        np.save(f, valid_label)
+    with open(os.path.join(torchvision_label_path, 'test_label.npy'), 'wb') as f:
+        np.save(f, test_label)
+
+    a = 3
+
 if __name__ == "__main__":
     # process_images()
     # process_images_JSON_separated()
@@ -581,4 +625,8 @@ if __name__ == "__main__":
     # upload_images_from_server_JSON_separated()
     # split_train_val_test_dataset()
     # resize_datasets()
-    generate_yolov8_annotation()
+    # generate_yolov8_annotation()
+
+    train_num = 28470
+    valid_num = train_num + 8143
+    generate_pytorch_label_format()
