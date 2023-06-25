@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 import numpy as np
-
+import pickle
 import cv2
 from tqdm import tqdm
 from roboflow import Roboflow
@@ -354,7 +354,6 @@ def generate_yolov8_annotation():
     # root_folder = '/data/veri-wild/veri-wild1/'
     # root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_dataset")
 
-
     target_train_label_folder = os.path.join(root_images_resized_folder, "train/labels")
     target_valid_label_folder = os.path.join(root_images_resized_folder, "valid/labels")
     target_test_label_folder = os.path.join(root_images_resized_folder, "test/labels")
@@ -432,76 +431,230 @@ def generate_yolov8_annotation():
                 # source_filepath = os.path.join(subdir, file)
                 # print(source_filepath)
 
-# def upload_images_1():
-#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
-#     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
-#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
-#     # Construct the URL
-#     # upload_url = "".join([
-#     #     "https://api.roboflow.com/dataset/vehicle_det_debug/upload",
-#     #     "?api_key=ivO9dgiYc3AQpHvRWBHC"
-#     # ])
-#     upload_url = "".join([
-#         "https://api.roboflow.com/dataset/vehicle_det_class_api_debug/upload",
-#         "?api_key=ivO9dgiYc3AQpHvRWBHC"
-#     ])
-#
-#     # Convert to JPEG Buffer
-#     buffered = io.BytesIO()
-#
-#     for subdir, dirs, files in tqdm(os.walk(root_folder)):
-#         for file in files:
-#             if file.split('.')[-1] == 'jpg':
-#                 print(os.path.join(subdir, file))
-#                 # image = Image.open("datasets/1.jpg").convert("RGB")
-#                 image = Image.open(os.path.join(subdir,file)).convert("RGB")
-#                 image.save(buffered, quality=90, format="JPEG")
-#                 m = MultipartEncoder(fields={'file': (file + ".jpg", buffered.getvalue(), "image/jpeg")})
-#                 r = requests.post(upload_url, data=m, headers={'Content-Type': m.content_type})
-#                 print(r.json())
 
-# def upload_images_example():
-#     # creating the Roboflow object
-#     # obtaining your API key: https://docs.roboflow.com/rest-api#obtaining-your-api-key
-#     rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
-#
-#     # using the workspace method on the Roboflow object
-#     workspace = rf.workspace()
-#
-#     # identifying the project for upload
-#     project = workspace.project("vehicle_det_class_api_debug")
-#
-#     # uploading the image to your project
-#     project.upload("datasets/1.jpg")
+'''mapping Veri Wild dataset to Blimp vehicle type classes for YOLOV8 det+classif.'''
+def generate_mapping_yolov8_det_annotation():
+    # local
+    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_mapping_dataset_debug")
 
-# def upload_images_2():
-#     # creating the Roboflow object
-#     # obtaining your API key: https://docs.roboflow.com/rest-api#obtaining-your-api-key
-#     rf = Roboflow(api_key="ivO9dgiYc3AQpHvRWBHC")
-#
-#     # using the workspace method on the Roboflow object
-#     workspace = rf.workspace()
-#
-#     # identifying the project for upload
-#     project = workspace.project("vehicle_debug")
-#
-#     # uploading the image to your project
-#     # project.upload("datasets/1.jpg")
-#
-#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/images_part01_debug'
-#     root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/pass_test_new'
-#     # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1'
-#
-#
-#     annotation_filename = os.path.join(root_folder, 'veriwild_annotations.json')
-#     annotation_str = open(annotation_filename, "r").read()
-#
-#     for subdir, dirs, files in tqdm(os.walk(root_folder)):
-#         for file in files:
-#             if file.split('.')[-1] == 'jpg':
-#                 print(os.path.join(subdir, file))
-#                 project.upload(os.path.join(subdir,file), annotation_filename)
-#
+    # remote
+    # root_folder = '/data/veri-wild/veri-wild1/'
+    # root_images_resized_folder = os.path.join(root_folder, "yolov8_resized_mapping_dataset")
+
+    target_train_label_folder = os.path.join(root_images_resized_folder, "train/labels")
+    target_valid_label_folder = os.path.join(root_images_resized_folder, "valid/labels")
+    target_test_label_folder = os.path.join(root_images_resized_folder, "test/labels")
+
+    if os.path.exists(target_train_label_folder) == False:
+        os.makedirs(target_train_label_folder)
+    if os.path.exists(target_valid_label_folder) == False:
+        os.makedirs(target_valid_label_folder)
+    if os.path.exists(target_test_label_folder) == False:
+        os.makedirs(target_test_label_folder)
+
+    vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
+
+    with open(vehicle_info_file_path) as file:
+        lines = [line.rstrip() for line in file]
+
+    metrics = ["train", "valid", "test"]
+
+    save_annotation = True
+
+    for metric in metrics:
+        metric_images_folder_path = os.path.join(root_images_resized_folder, metric, "images")
+        for subdir, dirs, files in os.walk(metric_images_folder_path):
+            for file in files:
+                image_filename = int(file.split(".")[0])
+                line = lines[image_filename - 1]
+                # e.g., 00001/000004;14;2018-03-11 10:30:58;Changan;SUV;white
+                current_line = line.split(';')
+                # [4] type vehicle class
+                current_line[4] = current_line[4].strip()
+                # current_image_path = os.path.join(root_images_folder, current_line[0] + '.jpg')
+                current_vehicle_type = current_line[4]
+
+                # for some case of first space ' small-sized truck', remove the additional space
+                if current_vehicle_type[0] == ' ':
+                    current_vehicle_type = current_vehicle_type[1:]
+
+                if current_vehicle_type == "SUV":
+                    save_annotation = True
+                    label_current_vehicle_type = 0
+                elif current_vehicle_type == "business purpose vehicle/MPV":
+                    save_annotation = True
+                    label_current_vehicle_type = 1
+                elif current_vehicle_type == "sedan":
+                    save_annotation = True
+                    label_current_vehicle_type = 2
+                elif current_vehicle_type == "minivan":
+                    save_annotation = True
+                    label_current_vehicle_type = 3
+                elif current_vehicle_type == "pickup truck":
+                    save_annotation = True
+                    label_current_vehicle_type = 4
+                elif current_vehicle_type == "HGV/large truck":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+                elif current_vehicle_type == "light passenger vehicle":
+                    save_annotation = True
+                    label_current_vehicle_type = 5
+                elif current_vehicle_type == "large-sized bus":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+                elif current_vehicle_type == "small-sized truck":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+                elif current_vehicle_type == "bulk lorry/fence truck":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+                elif current_vehicle_type == "minibus":
+                    label_current_vehicle_type = 3
+                elif current_vehicle_type == "others":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+                elif current_vehicle_type == "tank car/tanker":
+                    save_annotation = False
+                    os.remove(os.path.join(metric_images_folder_path, file))
+                    print("Delete: " + os.path.join(metric_images_folder_path, file))
+
+                if save_annotation == True:
+                    annotation_string = str(label_current_vehicle_type) + " 0.5 0.5 1 1"
+                    if metric == "train":
+                        current_annotation_path = os.path.join(target_train_label_folder, file.split(".")[0] + ".txt")
+                    elif metric == "valid":
+                        current_annotation_path = os.path.join(target_valid_label_folder, file.split(".")[0] + ".txt")
+                    elif metric == "test":
+                        current_annotation_path = os.path.join(target_test_label_folder, file.split(".")[0] + ".txt")
+
+                    text_file = open(current_annotation_path, "w")
+                    text_file.write(annotation_string)
+                    text_file.close()
+
+
+'''mapping Veri Wild dataset to Blimp vehicle type classes for YOLOV8 det+classif.'''
+def generate_mapping_yolov8_classfication_annotation():
+    # local
+    # root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    # root_images_resized_folder = os.path.join(root_folder, "yolov8_cla_resized_mapping_dataset_debug")
+
+    # remote
+    root_folder = '/data/veri-wild/veri-wild1/'
+    root_images_resized_folder = os.path.join(root_folder, "yolov8_cla_resized_mapping_dataset")
+
+    vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
+
+    with open(vehicle_info_file_path) as file:
+        lines = [line.rstrip() for line in file]
+
+    metrics = ["train", "valid", "test"]
+    str_suv = "SUV"
+    str_mpv = "MPV"
+    str_sedan = "sedan-fastback"
+    str_minibus = "minibus"
+    str_pickup = "pickup"
+    str_hatchback = "hatchback"
+
+    for metric in metrics:
+        metric_images_folder_path = os.path.join(root_images_resized_folder, metric, "images")
+        metric_images_SUV_folder_path = os.path.join(metric_images_folder_path, str_suv)
+        metric_images_MPV_folder_path = os.path.join(metric_images_folder_path, str_mpv)
+        metric_images_sedan_folder_path = os.path.join(metric_images_folder_path, str_sedan)
+        metric_images_minibus_folder_path = os.path.join(metric_images_folder_path, str_minibus)
+        metric_images_pickup_folder_path = os.path.join(metric_images_folder_path, str_pickup)
+        metric_images_hatchback_folder_path = os.path.join(metric_images_folder_path, str_hatchback)
+
+        if not os.path.exists(metric_images_SUV_folder_path):
+            os.makedirs(metric_images_SUV_folder_path)
+        if not os.path.exists(metric_images_MPV_folder_path):
+            os.makedirs(metric_images_MPV_folder_path)
+        if not os.path.exists(metric_images_sedan_folder_path):
+            os.makedirs(metric_images_sedan_folder_path)
+        if not os.path.exists(metric_images_minibus_folder_path):
+            os.makedirs(metric_images_minibus_folder_path)
+        if not os.path.exists(metric_images_pickup_folder_path):
+            os.makedirs(metric_images_pickup_folder_path)
+        if not os.path.exists(metric_images_hatchback_folder_path):
+            os.makedirs(metric_images_hatchback_folder_path)
+
+    for metric in metrics:
+        metric_images_folder_path = os.path.join(root_images_resized_folder, metric, "images")
+        for subdir, dirs, files in os.walk(metric_images_folder_path):
+            for file in files:
+                image_filename = int(file.split(".")[0])
+                line = lines[image_filename - 1]
+                # e.g., 00001/000004;14;2018-03-11 10:30:58;Changan;SUV;white
+                current_line = line.split(';')
+                # [4] type vehicle class
+                current_line[4] = current_line[4].strip()
+
+                current_vehicle_type = current_line[4]
+                current_image_path = os.path.join(metric_images_folder_path, file)
+
+                # for some case of first space ' small-sized truck', remove the additional space
+                if current_vehicle_type[0] == ' ':
+                    current_vehicle_type = current_vehicle_type[1:]
+
+                if os.path.isfile(current_image_path):
+                    if current_vehicle_type == "SUV":
+                        label_current_vehicle_type = 0
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_suv, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "business purpose vehicle/MPV":
+                        label_current_vehicle_type = 1
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_mpv, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "sedan":
+                        label_current_vehicle_type = 2
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_sedan, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "minivan":
+                        label_current_vehicle_type = 3
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_minibus, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "pickup truck":
+                        label_current_vehicle_type = 4
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_pickup, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "HGV/large truck":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
+                    elif current_vehicle_type == "light passenger vehicle":
+                        save_annotation = True
+                        label_current_vehicle_type = 5
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_hatchback, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "large-sized bus":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
+                    elif current_vehicle_type == "small-sized truck":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
+                    elif current_vehicle_type == "bulk lorry/fence truck":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
+                    elif current_vehicle_type == "minibus":
+                        label_current_vehicle_type = 3
+                        target_image_folder_path = os.path.join(metric_images_folder_path, str_minibus, file)
+                        os.rename(current_image_path, target_image_folder_path)
+                    elif current_vehicle_type == "others":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
+                    elif current_vehicle_type == "tank car/tanker":
+                        save_annotation = False
+                        os.remove(os.path.join(metric_images_folder_path, file))
+                        print("Delete: " + os.path.join(metric_images_folder_path, file))
 
 
 '''To slow, don't use it '''
@@ -577,46 +730,105 @@ def upload_images_from_server_JSON_separated():
 
 def generate_pytorch_label_format():
 
-    root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1"
-    annotations_json_path = os.path.join(root_path, "veriwild1_annotations.json")
+    # local
+    root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug"
+    torchvision_path = os.path.join(root_path, "torchvision_dataset_debug")
 
-    torchvision_path = os.path.join(root_path, "torchvision_dataset")
+    # remote
+    # root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1"
+    # torchvision_path = os.path.join(root_path, "torchvision_dataset")
+
+
+    # annotations_json_path = os.path.join(root_path, "veriwild1_annotations.json")
+
     torchvision_label_path = os.path.join(torchvision_path, "label")
-    torchvision_data_path = os.path.join(torchvision_path, "data")
-    torchvision_train_path = os.path.join(torchvision_data_path, "train")
-    torchvision_valid_path = os.path.join(torchvision_data_path, "valid")
-    torchvision_test_path = os.path.join(torchvision_data_path, "test")
+    # torchvision_data_path = os.path.join(torchvision_path, "data")
+    # torchvision_train_path = os.path.join(torchvision_data_path, "train")
+    # torchvision_valid_path = os.path.join(torchvision_data_path, "valid")
+    # torchvision_test_path = os.path.join(torchvision_data_path, "test")
 
-    for foler_name in [torchvision_path, torchvision_label_path, torchvision_data_path, torchvision_train_path, torchvision_valid_path, torchvision_test_path]:
+    # for foler_name in [torchvision_path, torchvision_label_path, torchvision_data_path, torchvision_train_path, torchvision_valid_path, torchvision_test_path]:
+    #     if os.path.exists(foler_name) == False:
+    #         os.makedirs(foler_name)
+
+    for foler_name in [torchvision_path, torchvision_label_path]:
         if os.path.exists(foler_name) == False:
             os.makedirs(foler_name)
 
-    with open(annotations_json_path, 'r') as annotations_json:
-        j_data = json.load(annotations_json)
+    image_name_list = []
 
-    list_training_label = []
-    list_valid_label = []
-    list_test_label = []
-    for idx, item in enumerate(j_data["annotations"]):
-        if idx <=  train_num:
-            list_training_label.append(item["category_id"])
-        elif idx >  train_num and idx <= valid_num:
-            list_valid_label.append(item["category_id"])
-        else:
-            list_test_label.append(item["category_id"])
 
-    training_label = np.asarray(list_training_label, dtype=np.float32)
-    valid_label = np.asarray(list_valid_label, dtype=np.float32)
-    test_label = np.asarray(list_test_label, dtype=np.float32)
 
-    with open(os.path.join(torchvision_label_path, 'training_label.npy'), 'wb') as f:
-        np.save(f, training_label)
-    with open(os.path.join(torchvision_label_path, 'valid_label.npy'), 'wb') as f:
-        np.save(f, valid_label)
-    with open(os.path.join(torchvision_label_path, 'test_label.npy'), 'wb') as f:
-        np.save(f, test_label)
 
-    a = 3
+    # list_training_label = []
+    # list_valid_label = []
+    # list_test_label = []
+    # for idx, item in enumerate(j_data["annotations"]):
+    #     if idx <=  train_num:
+    #         list_training_label.append(item["category_id"])
+    #     elif idx >  train_num and idx <= valid_num:
+    #         list_valid_label.append(item["category_id"])
+    #     else:
+    #         list_test_label.append(item["category_id"])
+    #
+    # training_label = np.asarray(list_training_label, dtype=np.float32)
+    # valid_label = np.asarray(list_valid_label, dtype=np.float32)
+    # test_label = np.asarray(list_test_label, dtype=np.float32)
+    #
+    # with open(os.path.join(torchvision_label_path, 'training_label.npy'), 'wb') as f:
+    #     np.save(f, training_label)
+    # with open(os.path.join(torchvision_label_path, 'valid_label.npy'), 'wb') as f:
+    #     np.save(f, valid_label)
+    # with open(os.path.join(torchvision_label_path, 'test_label.npy'), 'wb') as f:
+    #     np.save(f, test_label)
+    #
+    # a = 3
+
+
+
+# def generate_pytorch_label_format():
+#
+#     root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1"
+#     annotations_json_path = os.path.join(root_path, "veriwild1_annotations.json")
+#
+#     torchvision_path = os.path.join(root_path, "torchvision_dataset")
+#     torchvision_label_path = os.path.join(torchvision_path, "label")
+#     torchvision_data_path = os.path.join(torchvision_path, "data")
+#     torchvision_train_path = os.path.join(torchvision_data_path, "train")
+#     torchvision_valid_path = os.path.join(torchvision_data_path, "valid")
+#     torchvision_test_path = os.path.join(torchvision_data_path, "test")
+#
+#     for foler_name in [torchvision_path, torchvision_label_path, torchvision_data_path, torchvision_train_path, torchvision_valid_path, torchvision_test_path]:
+#         if os.path.exists(foler_name) == False:
+#             os.makedirs(foler_name)
+#
+#     with open(annotations_json_path, 'r') as annotations_json:
+#         j_data = json.load(annotations_json)
+#
+#     list_training_label = []
+#     list_valid_label = []
+#     list_test_label = []
+#     for idx, item in enumerate(j_data["annotations"]):
+#         if idx <=  train_num:
+#             list_training_label.append(item["category_id"])
+#         elif idx >  train_num and idx <= valid_num:
+#             list_valid_label.append(item["category_id"])
+#         else:
+#             list_test_label.append(item["category_id"])
+#
+#     training_label = np.asarray(list_training_label, dtype=np.float32)
+#     valid_label = np.asarray(list_valid_label, dtype=np.float32)
+#     test_label = np.asarray(list_test_label, dtype=np.float32)
+#
+#     with open(os.path.join(torchvision_label_path, 'training_label.npy'), 'wb') as f:
+#         np.save(f, training_label)
+#     with open(os.path.join(torchvision_label_path, 'valid_label.npy'), 'wb') as f:
+#         np.save(f, valid_label)
+#     with open(os.path.join(torchvision_label_path, 'test_label.npy'), 'wb') as f:
+#         np.save(f, test_label)
+#
+#     a = 3
+#
 
 if __name__ == "__main__":
     # process_images()
@@ -626,7 +838,13 @@ if __name__ == "__main__":
     # split_train_val_test_dataset()
     # resize_datasets()
     # generate_yolov8_annotation()
+    '''Not use yet'''
+    # generate_mapping_yolov8_annotation()
 
+    '''Yolo v8 only classification model'''
+    generate_mapping_yolov8_classfication_annotation()
+
+    '''WIP: preparing dataset loader for Pytorch'''
     train_num = 28470
     valid_num = train_num + 8143
-    generate_pytorch_label_format()
+    # generate_pytorch_label_format()
