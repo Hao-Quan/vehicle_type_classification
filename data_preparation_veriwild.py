@@ -729,61 +729,87 @@ def upload_images_from_server_JSON_separated():
                     pass
 
 def generate_pytorch_label_format():
-
     # local
-    root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug"
-    torchvision_path = os.path.join(root_path, "torchvision_dataset_debug")
+    root_folder = '/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug'
+    root_images_resized_folder = os.path.join(root_folder, "torchvision_resized_mapping_dataset_debug")
 
     # remote
-    # root_path = "/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1"
-    # torchvision_path = os.path.join(root_path, "torchvision_dataset")
+    # root_folder = '/data/veri-wild/veri-wild1/'
+    # root_images_resized_folder = os.path.join(root_folder, "yolov8_cla_resized_mapping_dataset")
 
+    torchvision_data_path = os.path.join(root_images_resized_folder, "data")
+    torchvision_label_path = os.path.join(root_images_resized_folder, "label")
+    if os.path.exists(torchvision_label_path) == False:
+        os.makedirs(torchvision_label_path)
 
-    # annotations_json_path = os.path.join(root_path, "veriwild1_annotations.json")
+    vehicle_info_file_path = os.path.join(root_folder, 'train_test_split', 'vehicle_info.txt')
 
-    torchvision_label_path = os.path.join(torchvision_path, "label")
-    # torchvision_data_path = os.path.join(torchvision_path, "data")
-    # torchvision_train_path = os.path.join(torchvision_data_path, "train")
-    # torchvision_valid_path = os.path.join(torchvision_data_path, "valid")
-    # torchvision_test_path = os.path.join(torchvision_data_path, "test")
+    with open(vehicle_info_file_path) as file:
+        lines = [line.rstrip() for line in file]
 
-    # for foler_name in [torchvision_path, torchvision_label_path, torchvision_data_path, torchvision_train_path, torchvision_valid_path, torchvision_test_path]:
-    #     if os.path.exists(foler_name) == False:
-    #         os.makedirs(foler_name)
+    metrics = ["train", "valid", "test"]
+    # str_suv = "SUV"
+    # str_mpv = "MPV"
+    # str_sedan = "sedan-fastback"
+    # str_minibus = "minibus"
+    # str_pickup = "pickup"
+    # str_hatchback = "hatchback"
 
-    for foler_name in [torchvision_path, torchvision_label_path]:
-        if os.path.exists(foler_name) == False:
-            os.makedirs(foler_name)
+    train_sample_name_list = []
+    train_label_list = []
+    test_sample_name_list = []
+    test_label_list = []
+    valid_sample_name_list = []
+    valid_label_list = []
 
-    image_name_list = []
+    for line in tqdm(lines):
+        # e.g., 00001/000004;14;2018-03-11 10:30:58;Changan;SUV;white
+        # [4] type vehicle class
+        current_line = line.split(';')
+        current_line[4] = current_line[4].strip()
+        current_image_name = current_line[0].split("/")[1] + '.jpg'
+        current_vehicle_type = current_line[4]
+        # for some case of first space ' small-sized truck', remove the additional space
+        if current_vehicle_type[0] == ' ':
+            current_vehicle_type = current_vehicle_type[1:]
 
+        '''search recursively subfolders (train, test, valid) to find whether exists the current_image_name'''
+        for root, dirs, files in os.walk(torchvision_data_path):
+            if os.path.isfile(os.path.join(root, current_image_name)):
+                if root.split("/")[-1] == "train":
+                    train_sample_name_list.append(current_image_name)
+                    assign_label(current_vehicle_type, train_label_list)
+                elif root.split("/")[-1] == "test":
+                    test_sample_name_list.append(current_image_name)
+                    assign_label(current_vehicle_type, test_label_list)
+                elif root.split("/")[-1] == "valid":
+                    valid_sample_name_list.append(current_image_name)
+                    assign_label(current_vehicle_type, valid_label_list)
 
+    with open(os.path.join(torchvision_label_path, 'train_label.pkl').replace('\\', '/'), 'wb') as f:
+        pickle.dump((train_sample_name_list, train_label_list), f)
+    with open(os.path.join(torchvision_label_path, 'test_label.pkl').replace('\\', '/'), 'wb') as f:
+        pickle.dump((test_sample_name_list, test_label_list), f)
+    with open(os.path.join(torchvision_label_path, 'valid_label.pkl').replace('\\', '/'), 'wb') as f:
+        pickle.dump((valid_sample_name_list, valid_label_list), f)
 
+    a = 1
 
-    # list_training_label = []
-    # list_valid_label = []
-    # list_test_label = []
-    # for idx, item in enumerate(j_data["annotations"]):
-    #     if idx <=  train_num:
-    #         list_training_label.append(item["category_id"])
-    #     elif idx >  train_num and idx <= valid_num:
-    #         list_valid_label.append(item["category_id"])
-    #     else:
-    #         list_test_label.append(item["category_id"])
-    #
-    # training_label = np.asarray(list_training_label, dtype=np.float32)
-    # valid_label = np.asarray(list_valid_label, dtype=np.float32)
-    # test_label = np.asarray(list_test_label, dtype=np.float32)
-    #
-    # with open(os.path.join(torchvision_label_path, 'training_label.npy'), 'wb') as f:
-    #     np.save(f, training_label)
-    # with open(os.path.join(torchvision_label_path, 'valid_label.npy'), 'wb') as f:
-    #     np.save(f, valid_label)
-    # with open(os.path.join(torchvision_label_path, 'test_label.npy'), 'wb') as f:
-    #     np.save(f, test_label)
-    #
-    # a = 3
-
+def assign_label(current_vehicle_type, label_list):
+    if current_vehicle_type == 'SUV':
+        label_list.append(0)
+    elif current_vehicle_type == 'business purpose vehicle/MPV':
+        label_list.append(1)
+    elif current_vehicle_type == 'sedan':
+        label_list.append(2)
+    elif current_vehicle_type == 'minivan':
+        label_list.append(3)
+    elif current_vehicle_type == 'minibus':
+        label_list.append(3)
+    elif current_vehicle_type == 'pickup truck':
+        label_list.append(4)
+    elif current_vehicle_type == 'light passenger vehicle':
+        label_list.append(5)
 
 
 # def generate_pytorch_label_format():
@@ -842,9 +868,9 @@ if __name__ == "__main__":
     # generate_mapping_yolov8_annotation()
 
     '''Yolo v8 only classification model'''
-    generate_mapping_yolov8_classfication_annotation()
+    # generate_mapping_yolov8_classfication_annotation()
 
     '''WIP: preparing dataset loader for Pytorch'''
     train_num = 28470
     valid_num = train_num + 8143
-    # generate_pytorch_label_format()
+    generate_pytorch_label_format()

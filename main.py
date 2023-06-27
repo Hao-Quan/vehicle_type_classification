@@ -5,10 +5,6 @@ from roboflow import Roboflow
 # model = YOLO('yolov8n.yaml')  # build a new model from YAML
 # model = YOLO('yolov8n.pt')  # load a pretrained model (recommended for training)
 # model = YOLO('yolov8n.yaml').load('yolov8n.pt')  # build from YAML and transfer weights
-#
-# # Train the model
-# model.train(data='coco128.yaml', epochs=100, imgsz=640)
-#
 
 from ultralytics import YOLO
 from PIL import Image
@@ -32,6 +28,25 @@ def train():
        epochs=100,
        #batch=8,
        name='yolov8n_vehicle')
+
+def train_classification():
+    model = YOLO("models/yolov8n-cls.pt")
+
+    #local
+    # results = model.train(
+    #    data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_cla_resized_mapping_dataset_debug',
+    #    # data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
+    #    imgsz=640,
+    #    epochs=10,
+    #    name='yolov8n_vehicle_cla')
+
+    # remote
+    results = model.train(
+        # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_cla_resized_mapping_dataset_debug',
+        data='/data/veri-wild/veri-wild1/yolov8_cla_resized_mapping_dataset',
+        imgsz=640,
+        epochs=100,
+        name='yolov8n_vehicle_cla')
 
 def val():
     #local
@@ -84,6 +99,45 @@ def predict():
 
     a = 1
 
+def predict_classification():
+    # im = cv2.imread("1.jpg")
+    # res_plotted = im.plot()
+    # cv2.imshow("result", im)
+    # cv2.waitKey(0)
+
+    # im = cv2.imread("/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1/images/00273/002980.jpg")
+    # im = cv2.imread("/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1/images/00001/000001.jpg")
+    # print(im.shape)
+
+    # local
+    # model = YOLO('runs/detect/yolov8n_vehicle14/weights/best.pt')
+    # results = model.predict(show=True, save=True, save_txt=True, source="datasets/0616.jpg")
+    # results = model.predict(show=True, save=True, save_txt=True, source="datasets/1.jpg")
+    # remote
+    model = YOLO('runs/classify/yolov8n_vehicle_cla/weights/best.pt')  # load a custom model
+    # results = model.predict(show=True, save=True, save_txt=True, source="datasets/0616.jpg")
+
+
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/1.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/2.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/3.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/4.png")
+
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/1.png")
+    # results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/2.png")
+    results = model.predict(show=False, save=True, save_txt=True, source="datasets/blimp/0000/2.png")
+
+
+    # results = model(im)
+    # print(results[0].probs)  # cls prob, (num_class, )
+
+    # res = model(img)
+    # res_plotted = results[0].plot()
+    # cv2.imshow("result", res_plotted)
+
+    a = 1
+
+
 def convert():
     model = YOLO('runs/detect/yolov8n_vehicle/weights/best.pt')
     # model.export(format='onnx')
@@ -92,7 +146,12 @@ def convert():
 
 
 if __name__ == "__main__":
+    '''YOLOV8 det + classification model'''
     # train()
     # val()
     # predict()
-    convert()
+    # convert()
+
+    '''YOLOV8 ONLY classification model'''
+    # train_classification()
+    predict_classification()
