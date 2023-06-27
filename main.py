@@ -32,7 +32,7 @@ def train():
 def train_classification():
     model = YOLO("models/yolov8n-cls.pt")
 
-    #local
+    #local - veriwild
     # results = model.train(
     #    data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_cla_resized_mapping_dataset_debug',
     #    # data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
@@ -40,13 +40,32 @@ def train_classification():
     #    epochs=10,
     #    name='yolov8n_vehicle_cla')
 
-    # remote
+    # remote  - veriwild
+    # results = model.train(
+    #     # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_cla_resized_mapping_dataset_debug',
+    #     data='/data/veri-wild/veri-wild1/yolov8_cla_resized_mapping_dataset',
+    #     imgsz=640,
+    #     epochs=100,
+    #     name='yolov8n_vehicle_cla')
+
+    # local - compcars
     results = model.train(
-        # data='/media/hao/Seagate Basic/dataset/veri-wild/veri-wild1_debug/yolov8_cla_resized_mapping_dataset_debug',
-        data='/data/veri-wild/veri-wild1/yolov8_cla_resized_mapping_dataset',
+       data='/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image_splitted',
+       # data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
+       imgsz=640,
+       epochs=2,
+       patience = 2,
+       batch = 4,
+       name='yolov8n_compcars_cla')
+
+    # remote  - compcars
+    results = model.train(
+        data='/data/compcars/compcars_torchvision/data/image_splitted',
         imgsz=640,
-        epochs=100,
-        name='yolov8n_vehicle_cla')
+        epochs=50,
+        patience = 15,
+        batch = 32,
+        name='yolov8n_compcars_cla')
 
 def val():
     #local
@@ -153,5 +172,5 @@ if __name__ == "__main__":
     # convert()
 
     '''YOLOV8 ONLY classification model'''
-    # train_classification()
-    predict_classification()
+    train_classification()
+    # predict_classification()

@@ -7,6 +7,7 @@ import cv2
 from tqdm import tqdm
 import scipy.io
 import pandas as pd
+import splitfolders
 
 def compcars_data_label_preparation():
     # local
@@ -114,8 +115,63 @@ def compcars_data_label_preparation():
 
     a = 1
 
+def dataset_train_valid_test_split():
+    # local
+    # root_path = "/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image"
+    # output_path = "/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image_splitted"
+
+    root_path = "/data/compcars/compcars_torchvision/data/image"
+    output_path = "/data/compcars/compcars_torchvision/data/image_splitted"
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    splitfolders.ratio(root_path, output=output_path, seed=1337, ratio=(.8, 0.1, 0.1))
+
+    # train_ratio = 0.7
+    # valid_ratio = 0.2
+    # test_ratio = 0.1
+    #
+    # # root_path = "/media/hao/Seagate Basic/dataset/compcars/compcars_debug"
+    # root_path = "/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image"
+    # metrics = ["train", "valid", "test"]
+    #
+    # str_mpv = 'MPV'
+    # str_suv = 'SUV'
+    # str_sedan_fastback = 'sedan_fastback'
+    # str_hatchback = 'hatchback'
+    # str_minibus = 'minibus'
+    # str_estate = 'estate'
+    # str_pickup = 'pickup'
+    # str_sport = 'sport'
+    #
+    # car_types_mapped_list = [str_mpv,
+    #                          str_suv,
+    #                          str_sedan_fastback,
+    #                          str_hatchback,
+    #                          str_minibus,
+    #                          str_estate,
+    #                          str_pickup,
+    #                          str_sport]
+    #
+    # for metric in metrics:
+    #     for car_type in car_types_mapped_list:
+    #         if not os.path.exists(os.path.join(root_path, metric, car_type)):
+    #             os.makedirs(os.path.join(root_path, metric, car_type))
+    #
+    # root_path
+    # for str_folder in [str_mpv, str_suv, str_sedan_fastback, str_hatchback, str_minibus, str_estate, str_pickup, str_sport]:
+    #     folder_num_files = len([name for name in os.listdir(os.path.join(root_path, str_folder)) if os.path.isfile(name)])
+    #     folder_train_num = folder_num_files * train_ratio
+    #     folder_valid_num = folder_num_files * valid_ratio
+    #     folder_test_num = folder_num_files * test_ratio
+    #     # for i in range(0, folder_train_num):
+
+
+
+
 
 
 if __name__ == "__main__":
-    compcars_data_label_preparation()
-    # dataset_train_valid_test_split()
+    # compcars_data_label_preparation()
+    dataset_train_valid_test_split()
