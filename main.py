@@ -49,14 +49,14 @@ def train_classification():
     #     name='yolov8n_vehicle_cla')
 
     # local - compcars
-    results = model.train(
-       data='/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image_splitted',
-       # data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
-       imgsz=640,
-       epochs=2,
-       patience = 2,
-       batch = 4,
-       name='yolov8n_compcars_cla')
+    # results = model.train(
+    #    data='/media/hao/Seagate Basic/dataset/compcars/compcars_torchvision_debug/data/image_splitted',
+    #    # data='/data/veri-wild/veri-wild1/yolov8_resized_dataset/data.yaml',
+    #    imgsz=640,
+    #    epochs=2,
+    #    patience = 2,
+    #    batch = 4,
+    #    name='yolov8n_compcars_cla')
 
     # remote  - compcars
     results = model.train(
